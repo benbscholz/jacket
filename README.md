@@ -39,7 +39,7 @@ environments.
 ###jacket standard library
 
 A jacket script can call any Javascript function. There are a number of built-in
-functions which can be found in `src/jktlib.js`. 
+functions which can be found in `src/built_ins.js`. 
 
 ###jacket compilation
 
