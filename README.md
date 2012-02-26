@@ -46,7 +46,7 @@ functions which can be found in `src/built_ins.js`.
 Jacket compilation is a 3 step process.
 	
 	1) Preprocessing: Removal of illegal characters & symbol/string distinction.
-	2) Parsing:       Transfrom the jacket script into a syntax tree.
+	2) Parsing:       Transform the jacket script into a syntax tree.
 	3) Translation:   Generate appropriate Javascript code from the syntax tree.
 
 Jacket also includes a pretty printer `_pretty` and a balanced parentheses
@@ -90,5 +90,5 @@ jacket is MIT licensed.
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 	IN THE SOFTWARE.
 
-##acknowledgments
+###acknowledgments
 Jacket was inspired by Peter Norvig's [lispy](http://norvig.com/lispy.html).
