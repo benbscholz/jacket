@@ -66,6 +66,11 @@ var _preprocess = function (source) {
 				sstate = false;
 				code += "_str_";
 				break;
+			case "'":
+				sstate = false;
+				code += "(quote ";
+				i++;
+				break;
 			case ' ':
 				if (sstate == false) {
 					sstate = true;

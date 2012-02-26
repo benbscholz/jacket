@@ -47,12 +47,12 @@ var _translate = function (x) {
 		code = "function () {";
 		for (i = 1; i < x.length; i += 1) {
 			if (i === x.length-1) {
-				code += "return " + trans(x[i]);
+				code += "return " + trans(x[i]) + ";";
 			} else {
-				code += trans(x[i]) + ";";
+				code += trans(x[i]);
 			}
 		}	
-		code += ";}();";
+		code += "}();";
 		return code;
 	};
 	
@@ -64,11 +64,12 @@ var _translate = function (x) {
 		} else {
 			code = "var " + x[1] + " = " + trans(x[2]);
 		}
-		return code + ";";
+		return code;
 	};
 	
 	var build_lambda = function (x) {
-		return "function (" + build_parameters(x[1]) +") {"+ trans(x[2]) + ";}";
+		return "function (" + build_parameters(x[1]) + 
+			   ") {return " + trans(x[2]) + ";}";
 	};
 	
 	var build_procedure = function (x) {
@@ -82,6 +83,15 @@ var _translate = function (x) {
 			code.push(trans(x[i]));
 		}
 		return code.join();
+	};
+	
+	var build_quote = function (x) {
+		var i, quote = "[";
+		for (i = 1; i < x.length; i++) {
+			quote += x[i] + ",";
+		}
+		quote = quote.slice(0,-1) + "]";
+		return quote;
 	};
 	
 	var is_zero_depth = function (x) {
@@ -101,15 +111,15 @@ var _translate = function (x) {
 		if (typeof x === "string" || !(x instanceof Array)) {
 			return x;
 		} else if (x[0] === "quote") {
-			return "\"" + x[1] + "\";";
+			return build_quote(x);
 		} else if (x[0] === "if") {
 			return build_if(x);
 		} else if (x[0] === "cond") {
 			return build_cond(x);
-		} else if (x[0] === "set!") {
-			return build_set(x);
+		} else if (x[0] === "set_bang") {
+			return build_set(x) + ";";
 		} else if (x[0] === "define") {
-			return build_define(x);
+			return build_define(x) + ";";
 		} else if (x[0] === "lambda") {
 			return build_lambda(x);
 		} else if (x[0] === "begin") {
