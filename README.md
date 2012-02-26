@@ -52,15 +52,19 @@ Jacket compilation is a 3 step process.
 Jacket also includes a pretty printer `_pretty` and a balanced parentheses
 checker `_wellness`.
 
-###jacket to do
+###jacket: to do
 
 Jacket currently provides minimal functionality; there are still plenty of
 issues to iron out. 
 
 `translator.js` - Fix code generation bugs. 
+
 `pretty.js`     - Add proper Javascript parsing for true pretty printing.
+
 `wellness.js`   - Add useful error messages.
+
 `repl.js`       - Implement history for interactive interpreter.
+
 `tests.js`      - Write test for code generation.
 
 ###license
