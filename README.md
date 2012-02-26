@@ -46,8 +46,8 @@ functions which can be found in `src/built_ins.js`.
 Jacket compilation is a 3 step process.
 	
 	1) Preprocessing: Removal of illegal characters & symbol/string distinction.
-	2) Parsing: Transfrom the jacket script into a syntax tree.
-	3) Translation: Generate appropriate Javascript code from the syntax tree.
+	2) Parsing:       Transfrom the jacket script into a syntax tree.
+	3) Translation:   Generate appropriate Javascript code from the syntax tree.
 
 Jacket also includes a pretty printer `_pretty` and a balanced parentheses
 checker `_wellness`.
