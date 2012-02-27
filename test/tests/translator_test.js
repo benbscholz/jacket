@@ -6,7 +6,7 @@ var trans = function (x) {
 module("translator.js");
 	
 test("if code generation", function () {
-	expect(7);
+	expect(8);
 	equal(trans("(if (= 1 2) a b)"), 
 		  "if (eq_proc(1,2)) {return a;} else {return b;}",
 		  "if statement code generation");
@@ -28,4 +28,7 @@ test("if code generation", function () {
 	equal(trans("'(1 2 3 4)"),
 		  "[1,2,3,4]",
 		  "quote list code generation");
+	equal(trans("(+ 1 2)"),
+		  "add_proc(1,2)",
+		  "function call code generation");
 });
