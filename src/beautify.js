@@ -12,7 +12,7 @@
   "End braces on own line" added by Chris J. Shull, <chrisjshull@gmail.com>
 
   You are free to use this in any way you want, in case you find this useful or working for you.
-/
+*/
 
 
 
