@@ -41,29 +41,39 @@ var div_proc = function () {
 	return val;
 };
 
-var list = function () {
+//var list = function () {
+	//var args = [],
+		//i,
+		//j,
+		//l,
+		//prev,
+		//temp;
+	//for (i = 0; i < arguments.length; i += 1) {
+		//args[i] = arguments[i];
+	//}
+	//l = [];
+	//prev = [];
+	//temp = [];
+	//for (i = args.length-1; i >= 0; i -= 1) {
+		//l = [args[i], prev];
+		//prev = l;
+		//temp = [];
+		//for (j = 0; j < prev.length; j += 1) {
+			//temp[j] = prev[j];
+		//}
+		//prev = temp;
+	//}
+	//return l;
+//};
+
+var list = function () { 
 	var args = [],
-		i,
-		j,
-		l,
-		prev,
-		temp;
+		i;
 	for (i = 0; i < arguments.length; i += 1) {
-		args[i] = arguments[i];
+		args.push(arguments[i]);
 	}
-	l = [];
-	prev = [];
-	temp = [];
-	for (i = args.length-1; i >= 0; i -= 1) {
-		l = [args[i], prev];
-		prev = l;
-		temp = [];
-		for (j = 0; j < prev.length; j += 1) {
-			temp[j] = prev[j];
-		}
-		prev = temp;
-	}
-	return l;
+	args.push([]);
+	return args;
 };
 
 var vector_set = function (v, p, val) {
@@ -72,6 +82,15 @@ var vector_set = function (v, p, val) {
 	return a;
 };
 
+var _isArray = function (item) {
+	if (item && typeof item === 'object' && item.constructor === Array)
+		return true;
+	else if (Object.prototype.toString.call(item) == '[object Array]')
+		return true;
+	else
+		return false;
+};	
+
 var mod_proc = function (a,b) {return a%b;};
 var lt_proc = function (a,b) {return a<b;};
 var gt_proc = function (a,b) {return a>b;};
@@ -79,10 +98,25 @@ var lte_proc = function (a,b) {return a<=b;};
 var gte_proc = function (a,b) {return a>=b;};
 var eq_proc = function (a,b) {return a===b;};
 var car = function (a) {return a[0];};
-var cdr = function (a) {return a[1];};
-var cons = function (a,b) {return [a,b];};
+var cdr = function (a) {return a.slice(1,a.length);};
+var first = car;
+var rest = cdr;
+var cons = function (a,b) {
+	var isa, isb;
+	isa = _isArray(a);
+	isb = _isArray(b);
+	if (isa && isb) {
+		return a.concat(b);
+	} else if (isa) {
+		return a.push(b);
+	} else if (isb) {
+		return b.push(a);
+	} else {
+		return [a,b,[]];
+	}
+};
 var empty_bool = function (a) {return (a instanceof Array && a.length === 0);};
-var list_bool = function (a) {return (a instanceof Array && a.length === 2);};
+var list_bool = function (a) {return _isArray(a) && a[-1] === [];};
 var equal_bool = function (a,b) {return a==b;};
 var positive_bool = function (a) {return a>0;};
 var negative_bool = function (a) {return a<0;	};
@@ -95,6 +129,8 @@ var vector_ref = function (v, p) {return v[p];};
 var vector_append = function (a, b) {return a.concat(b);};
 var empty = [];
 var not = function (a) { return !a; };
+var add1 = function (a) { return a+1; };
+var sub1 = function (a) { return a-1; };
 var abs = Math.abs;
 var acos = Math.acos;
 var asin = Math.asin;

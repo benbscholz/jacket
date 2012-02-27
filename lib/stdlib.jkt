@@ -41,7 +41,7 @@
 		((empty? l) false)
 		((eq? m (first l)) true)
 		(else (member m (rest l)))))
-		
+	
 (define (take l n)
 	(cond
 		((zero? n) empty)
@@ -51,3 +51,4 @@
 					
 (define (drop l n) 
 	(take (reverse l) n))
+
