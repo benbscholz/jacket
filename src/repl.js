@@ -13,9 +13,8 @@ var _repl = function () {
 	load("pretty.js");
 	load("wellness.js");
 
-	var lib =_pretty(_translate(_parse(_preprocess(read("../lib/stdlib.jkt")))));
-	print(lib);
-	//eval(lib);
+	var lib = _translate(_parse(_preprocess(read("../lib/stdlib.jkt"))));
+	eval(lib);
 	print("stdlib.jkt loaded.");
 
 	print("#################");
@@ -36,7 +35,7 @@ var _repl = function () {
 			wellness = _wellness(lines);
 		}
 
-		out = _pretty(_translate(_parse(_preprocess(lines))[0]));
+		out = _translate(_parse(_preprocess(lines)));
 
 		if (out[out.length-1] == '\n') 
 			putstr(eval(out));

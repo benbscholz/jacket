@@ -1,5 +1,4 @@
-/**
- * _translate: array -> string
+/** 
  *
  * Translate the syntax tree into Javascript code.
  *
@@ -31,11 +30,11 @@ var _translate = function (x) {
 	};
 	
 	var form_if = function (x) {
-		return "if (" + trans(x[0]) + ") {return " + trans(x[1]) + ";}";
+		return "if (" + trans(x[0]) + ") {" + trans(x[1], true) + ";}";
 	};
 	
 	var form_else = function (x) {
-		return " else {return " + trans(x) + ";}";
+		return " else {" + trans(x, true) + ";}";
 	};
 	
 	var build_set = function (x) {
@@ -47,9 +46,9 @@ var _translate = function (x) {
 		code = "function () {";
 		for (i = 1; i < x.length; i += 1) {
 			if (i === x.length-1) {
-				code += "return " + trans(x[i]) + ";";
+				code += trans(x[i], true) + ";";
 			} else {
-				code += trans(x[i]);
+				code += trans(x[i], false) + ";";
 			}
 		}	
 		code += "}();";
@@ -64,12 +63,12 @@ var _translate = function (x) {
 		} else {
 			code = "var " + x[1] + " = " + trans(x[2]);
 		}
-		return code;
+		return code + ";";
 	};
 	
 	var build_lambda = function (x) {
 		return "function (" + build_parameters(x[1]) + 
-			   ") {return " + trans(x[2]) + ";}";
+			   ") {" + trans(x[2], true) + ";}";
 	};
 	
 	var build_procedure = function (x) {
@@ -80,7 +79,7 @@ var _translate = function (x) {
 		var code = [],
 			i;
 		for (i = 0; i < x.length; i += 1) {
-			code.push(trans(x[i]));
+			code.push(trans(x[i], false));
 		}
 		return code.join();
 	};
@@ -106,10 +105,11 @@ var _translate = function (x) {
 		return true;
 	};
 	
-	var trans = function (x) {
-		var code = "";
+	var trans = function (x, in_func) {
+		var ret, code = "";
+		ret = in_func ? "return " : "";
 		if (typeof x === "string" || !(x instanceof Array)) {
-			return x;
+			return ret + x;
 		} else if (x[0] === "quote") {
 			return build_quote(x);
 		} else if (x[0] === "if") {
@@ -117,15 +117,15 @@ var _translate = function (x) {
 		} else if (x[0] === "cond") {
 			return build_cond(x);
 		} else if (x[0] === "set_bang") {
-			return build_set(x) + ";";
+			return ret + build_set(x);
 		} else if (x[0] === "define") {
-			return build_define(x) + ";";
+			return build_define(x);
 		} else if (x[0] === "lambda") {
-			return build_lambda(x);
+			return ret + build_lambda(x);
 		} else if (x[0] === "begin") {
 			return build_begin(x);
 		} else {
-			return build_procedure(x);
+			return ret + build_procedure(x);
 		}
 	};
 
@@ -137,15 +137,15 @@ var _translate = function (x) {
         else
             return false;
     };
-	
+
+	var i, out = "";
 	if (_isArray(x)) {
-		var i, out = "";
 		for (i = 0; i < x.length; i++) {
-			out += trans(x[i]);
+			out += trans(x[i], false);
 		}
-		return out;
 	} else {
-		return trans(x);
+		out = trans(x);
 	}
+	return out.replace(/\;\;/g, ';');
 };
 
