@@ -76,7 +76,7 @@ var _preprocess = function (source) {
 				break;
 			// ignore lines beginning with ';'
 			case ';':
-				while (source[i] !== '\n' && i !== source.length-1) {
+				while (source[i] !== '\n' && i !== source.length) {
 					i++;
 				}
 				break;
