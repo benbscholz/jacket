@@ -80,7 +80,7 @@ var _preprocess = function (source) {
 					i++;
 				}
 				break;
-			// "apple" -> "_str_apple_str"
+			// "apple" -> "_str_apple_str_"
 			case '"':
 				sstate = false;
 				code += "_str_";
