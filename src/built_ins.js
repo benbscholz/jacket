@@ -41,31 +41,6 @@ var div_proc = function () {
 	return val;
 };
 
-//var list = function () {
-	//var args = [],
-		//i,
-		//j,
-		//l,
-		//prev,
-		//temp;
-	//for (i = 0; i < arguments.length; i += 1) {
-		//args[i] = arguments[i];
-	//}
-	//l = [];
-	//prev = [];
-	//temp = [];
-	//for (i = args.length-1; i >= 0; i -= 1) {
-		//l = [args[i], prev];
-		//prev = l;
-		//temp = [];
-		//for (j = 0; j < prev.length; j += 1) {
-			//temp[j] = prev[j];
-		//}
-		//prev = temp;
-	//}
-	//return l;
-//};
-
 var list = function () { 
 	var args = [],
 		i;
