@@ -2,6 +2,7 @@
  * _pretty: string -> string
  *
  * Pretty print Javascript code.
+ * This is largely incorrect.
  */
 var _pretty = function (source) {
 
