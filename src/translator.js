@@ -129,17 +129,8 @@ var _translate = function (x) {
 		}
 	};
 
-	var _isArray = function (item) {
-        if (item && typeof item === 'object' && item.constructor === Array)
-            return true;
-        else if (Object.prototype.toString.call(item) == '[object Array]')
-            return true;
-        else
-            return false;
-    };
-
 	var i, out = "";
-	if (_isArray(x)) {
+	if (_is_array(x)) {
 		for (i = 0; i < x.length; i++) {
 			out += trans(x[i], false);
 		}
