@@ -110,3 +110,17 @@ var _preprocess = function (source) {
 
 	return code;
 };
+
+/**
+ * _is_array: a -> boolean
+ *
+ * Returns true if argument is an array, false otherwise.
+ */
+var _is_array = function (item) {
+	if (item && typeof item === 'object' && item.constructor === Array)
+		return true;
+	else if (Object.prototype.toString.call(item) === '[object Array]')
+		return true;
+	else
+		return false;
+};
