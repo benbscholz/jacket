@@ -93,18 +93,6 @@ var _translate = function (x) {
 		return quote;
 	};
 	
-	var is_zero_depth = function (x) {
-		var i;
-		for (i = 0; i < x.length; i += 1) {
-			if (!(typeof x[i] === "string" || 
-				  typeof x[i] === "number" || 
-				  typeof x[i] === "boolean")) {
-				return false;
-			}
-		}	
-		return true;
-	};
-	
 	var trans = function (x, in_func) {
 		var ret, code = "";
 		ret = in_func ? "return " : "";
