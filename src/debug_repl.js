@@ -42,6 +42,7 @@ var _debug_repl = function () {
 		parse = _parse(prepr);
 		trans = _pretty(_translate(parse));
 
+		putstr('\n\n');
 		print("preprocessed:");
 		putstr('\t');
 		if (prepr[prepr.length-1] == '\n')
@@ -68,10 +69,15 @@ var _debug_repl = function () {
 
 		print("evaluated:");
 		putstr('\t');
-		if (trans[trans.length-1] == '\n')
-			putstr(eval(trans));
+		evaled = eval(trans);
+		if (_is_array(evaled))
+			out = _show_array(evaled);
 		else
-			print(eval(trans));	
+			out = evaled
+		if (trans[trans.length-1] == '\n')
+			putstr(out);
+		else
+			print(out);	
 		putstr('\n');
 	}
 
