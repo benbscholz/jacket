@@ -1,84 +1,75 @@
 #!/usr/bin/env js
 /**
  * Interactive interpreter for jacket.
- * This repl is useful for debugging since it prints
- * the preprocessed code, the parsed code, and the 
- * translated code to stdout. The translated code is
- * pretty printed by default.
- * 
+ * Debug version.
  */
-var _debug_repl = function () {
-	var line, lines, wellness;
+var _debug_js = function () {
 
-	load("preprocessor.js");
-	load("parser.js");
-	load("translator.js");
-	load("built_ins.js");
-	load("pretty.js");
-	load("wellness.js");
+	var compile = function (source) {
+		return _translate(_parse(_preprocess(source)));
+	};
 
-	eval(_translate(_parse(_preprocess(read("../lib/stdlib.jkt")))));
-	print("stdlib.jkt loaded.");
+	var show_preprocessed = function (preprocessed) {
+		putstr("Preprocess:\n\t");
+		print(preprocessed);
+	};
 
-	print("#################");
-	print("## jacket REPL ##");
-	print("## v0.1        ##");
-	print("#################");
+	var show_parsed = function (parsed) {
+		putstr("Parsed:\n\t");
+		print(_show_array(parsed));
+	};
 
-	while (1) {
-		putstr("> ");
-		line = readline();
-		lines = line;
-		wellness = _wellness(lines);
+	var show_translated = function (translated) {
+		putstr("Translated:\n\t");
+		print(translated);
+	};
 
-		while (!wellness) {
-			putstr("... ");
+	var show_evaluated = function (evaluated) {
+		out = _is_array(evaluated) ? _show_array(evaluated) : evaluated;
+		putstr("Evaluated:\n\t");
+		print(out);
+	};
+
+	var repl = function () {
+		var line, lines, wellness;
+
+		load("preprocessor.js");
+		load("parser.js");
+		load("translator.js");
+		load("built_ins.js");
+		load("pretty.js");
+		load("wellness.js");
+
+		print("#################");
+		print("## jacket REPL ##");
+		print("## v0.1        ##");
+		print("#################");
+
+		eval(compile(read("../lib/stdlib.jkt")));
+		print("stdlib.jkt loaded");
+
+		while (true) {
+			putstr("db > ");
 			line = readline();
-			lines += line;
+			lines = line;
 			wellness = _wellness(lines);
+
+			while (!wellness) {
+				putstr("... ");
+				line = readline();
+				lines += line;
+				wellness = _wellness(lines);
+			}
+
+			pr = _preprocess(lines);
+			pa = _parse(pr);
+		 	tr = _pretty(_translate(pa));
+
+			show_preprocessed(pr);
+			show_parsed(pa);
+			show_translated(tr);
+			show_evaluated(eval(tr));
 		}
-
-		prepr = _preprocess(lines);
-		parse = _parse(prepr);
-		trans = _pretty(_translate(parse));
-
-		putstr('\n\n');
-		print("preprocessed:");
-		putstr('\t');
-		if (prepr[prepr.length-1] == '\n')
-			putstr(prepr);
-		else
-			print(prepr);
-		putstr('\n');
-
-		print("parsed:");
-		putstr('\t');
-		if (parse[parse.length-1] == '\n')
-			putstr(_show_array(parse));
-		else
-			print(_show_array(parse));
-		putstr('\n');
-
-		print("translated:");
-		putstr("    ");
-		if (trans[trans.length-1] == '\n')
-			putstr(trans);
-		else
-			print(trans);	
-		putstr('\n');
-
-		print("evaluated:");
-		putstr('\t');
-		evaled = eval(trans);
-		if (_is_array(evaled))
-			out = _show_array(evaled);
-		else
-			out = evaled
-		if (trans[trans.length-1] == '\n')
-			putstr(out);
-		else
-			print(out);	
-		putstr('\n');
-	}
+	}();
 
 }();
