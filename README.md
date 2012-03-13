@@ -49,8 +49,9 @@ Jacket compilation is a 3 step process.
 	2) Parsing:       Transform the jacket script into a syntax tree.
 	3) Translation:   Generate appropriate Javascript code from the syntax tree.
 
-Jacket also includes a pretty printer `_pretty` and a balanced parentheses
-checker `_wellness`.
+Jacket also includes a balanced parentheses checker `_wellness`. It uses
+[beautify.js](https://github.com/einars/js-beautify) as a pretty-printer,
+`_pretty`.
 
 ###jacket: to do
 
@@ -58,8 +59,6 @@ Jacket currently provides minimal functionality; there are still plenty of
 issues to iron out. 
 
 `translator.js` - Fix code generation bugs. 
-
-`pretty.js`     - Add proper Javascript parsing for true pretty printing.
 
 `wellness.js`   - Add useful error messages.
 
