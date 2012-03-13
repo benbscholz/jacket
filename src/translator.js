@@ -68,7 +68,7 @@ var _translate = function (x) {
 	
 	var build_lambda = function (x) {
 		return "function (" + build_parameters(x[1]) + 
-			   ") {" + trans(x[2], true) + ";}";
+			   ") {" + trans(x[2], true) + "}";
 	};
 	
 	var build_procedure = function (x) {
