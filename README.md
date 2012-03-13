@@ -53,6 +53,25 @@ Jacket also includes a balanced parentheses checker `_wellness`. It uses
 [beautify.js](https://github.com/einars/js-beautify) as a pretty-printer,
 `_pretty`.
 
+###jacket translation examples
+
+fib.jkt:
+
+	(define (fib n)
+		(if (< n 2)
+			n
+			(+ (fib (- n 1)) (fib (- n 2)))))
+
+fib.js:
+
+	var fib = function(n) {
+		if (lt_proc(n, 2)) {
+			return n;
+		} else {
+			return add_proc(fib(sub_proc(n, 1)), fib(sub_proc(n, 2)));
+		}
+	};
+
 ###jacket: to do
 
 Jacket currently provides minimal functionality; there are still plenty of
