@@ -120,7 +120,7 @@ var _translate = function (x) {
 	var i, out = "";
 	if (_is_array(x)) {
 		for (i = 0; i < x.length; i++) {
-			out += trans(x[i], false);
+			out += trans(x[i], false) + " ";
 		}
 	} else {
 		out = trans(x);

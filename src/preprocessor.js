@@ -5,10 +5,11 @@
  * primitive operations into function calls, and distinguishes strings
  * from symbols with the "_str" annotation. Extra whitespace, tabs, 
  * and newlines are also removed at this time. 
+ *
  */
 var _preprocess = function (source) {
 	
-	var i, sstate, code = "";
+	var i, sstate, qstate = 0, code = "";
 
 	for (i = 0; i < source.length; i++) {
 		switch (source[i]) {
@@ -80,10 +81,10 @@ var _preprocess = function (source) {
 					i++;
 				}
 				break;
-			// "apple" -> "_str_apple_str_"
+			// "apple" -> "___apple___"
 			case '"':
 				sstate = false;
-				code += "_str_";
+				code += "\"";
 				break;
 			// '(1 2 3 4) -> (quote 1 2 3 4)
 			// this behavior is incorrect
