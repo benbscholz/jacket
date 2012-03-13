@@ -9,7 +9,7 @@
  */
 var _preprocess = function (source) {
 	
-	var i, sstate, qstate = 0, code = "";
+	var i, sstate, code = "";
 
 	for (i = 0; i < source.length; i++) {
 		switch (source[i]) {
@@ -81,7 +81,7 @@ var _preprocess = function (source) {
 					i++;
 				}
 				break;
-			// "apple" -> "___apple___"
+			// "apple" -> "\"apple\""
 			case '"':
 				sstate = false;
 				code += "\"";
