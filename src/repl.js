@@ -10,7 +10,6 @@ var _repl = function () {
 	load("parser.js");
 	load("translator.js");
 	load("built_ins.js");	
-	load("pretty.js");
 	load("wellness.js");
 
 	var lib = _translate(_parse(_preprocess(read("../lib/stdlib.jkt"))));
