@@ -62,9 +62,9 @@ fib.jkt:
 			n
 			(+ (fib (- n 1)) (fib (- n 2)))))
 ```
-```javascript
-fib.js:
 
+fib.js:
+```javascript
 	var fib = function(n) {
 		if (lt_proc(n, 2)) {
 			return n;
