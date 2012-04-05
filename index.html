@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Jacket by benbscholz</title>
+    
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Jacket</h1>
+        <p>A compiler &amp; interactive interpreter for a subset of Scheme.</p>
+        <p class="view"><a href="https://github.com/benbscholz/jacket">View the Project on GitHub <small>benbscholz/jacket</small></a></p>
+        <ul>
+          <li><a href="https://github.com/benbscholz/jacket/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/benbscholz/jacket/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/benbscholz/jacket">Fork On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h2>what is jacket?</h2>
+
+<p>Jacket is a compiler and interactive interpreter for a subset of Scheme. Written in Javascript, it allows the execution of jacket source files through a web 
+browser or from the command line.</p>
+
+<h2>jacket in the browser</h2>
+
+<p>To use jacket in a web browser, include a jacket source file using a script tag
+with the language property set to <code>language/jacket</code>:</p>
+
+<pre><code>&lt;script src="lib/stdlib.jkt" type="language/jacket"&gt;&lt;/script&gt;
+</code></pre>
+
+<p>Include the jacket compiler:</p>
+
+<pre><code>&lt;script src="jacket.min.js"&gt;&lt;/script&gt;
+</code></pre>
+
+<p>Your jacket script will automatically compile and execute when the page loads.</p>
+
+<h2>jacket interpreter</h2>
+
+<p>The jacket interpreter is built on top of <code>Spidermonkey 1.8.5</code>. Install
+Spidermonkey with homebrew <code>brew install spidermonkey</code>, or your favorite package
+manager.</p>
+
+<p>Run the interpreter from the <code>src/</code> directory:</p>
+
+<pre><code>./repl.js
+</code></pre>
+
+<p>To exit the interpreter, evaluate <code>(quit)</code>.</p>
+
+<p>The Javascript evaluated in the interpreter is same as the output of the
+compilation in the browser. Any differences in behavior are likely a result of
+discrepencies between the Spidermonkey backend and other Javascript
+environments.</p>
+
+<h2>jacket standard library</h2>
+
+<p>A jacket script can call any Javascript function. There are a number of built-in
+functions which can be found in <code>src/built_ins.js</code>. </p>
+
+<h2>jacket compilation</h2>
+
+<p>Jacket compilation is a 3 step process.</p>
+
+<pre><code>1) Preprocessing: Removal of illegal characters &amp; symbol/string distinction.
+2) Parsing:       Transform the jacket script into a syntax tree.
+3) Translation:   Generate appropriate Javascript code from the syntax tree.
+</code></pre>
+
+<p>Jacket also includes a balanced parentheses checker <code>_wellness</code>. It uses
+<a href="https://github.com/einars/js-beautify">beautify.js</a> as a pretty-printer,
+<code>_pretty</code>.</p>
+
+<h2>jacket translation examples</h2>
+
+<p>fib.jkt:</p>
+
+<div class="highlight">
+<pre><span class="p">(</span><span class="nv">define</span> <span class="p">(</span><span class="nv">fib</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&lt;</span> <span class="nv">n</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="nv">n</span>
+        <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="nv">fib</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">n</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="nv">fib</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">n</span> <span class="mi">2</span><span class="p">)))))</span>
+</pre>
+</div>
+
+
+<p>fib.js:</p>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">fib</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">lt_proc</span><span class="p">(</span><span class="nx">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">n</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">add_proc</span><span class="p">(</span><span class="nx">fib</span><span class="p">(</span><span class="nx">sub_proc</span><span class="p">(</span><span class="nx">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="nx">fib</span><span class="p">(</span><span class="nx">sub_proc</span><span class="p">(</span><span class="nx">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">)));</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</pre>
+</div>
+
+
+<h2>jacket: to do</h2>
+
+<p>Jacket currently provides minimal functionality; there are still plenty of
+issues to iron out. </p>
+
+<p><code>translator.js</code> - Fix code generation bugs. </p>
+
+<p><code>wellness.js</code>   - Add useful error messages.</p>
+
+<p><code>repl.js</code>       - Implement history for interactive interpreter.</p>
+
+<p><code>tests.js</code>      - Write test for code generation.</p>
+
+<h2>license</h2>
+
+<p>jacket is MIT licensed.</p>
+
+<pre><code>Copyright (C) 2012 Ben Brooks Scholz 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to 
+deal in the Software without restriction, including without limitation the 
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
+sell copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in 
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+IN THE SOFTWARE.
+</code></pre>
+
+<h2>acknowledgments</h2>
+
+<p>Jacket was inspired by Peter Norvig's <a href="http://norvig.com/lispy.html">lispy</a>.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/benbscholz">benbscholz</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+  </body>
+</html>
