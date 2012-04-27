@@ -21,7 +21,7 @@ Your jacket script will automatically compile and execute when the page loads.
 
 ###jacket interpreter
 
-The jacket interpreter is built on top of `Spidermonkey 1.8.5`. Install
+The jacket interpreter is built on top of `Node.js`. Install
 Spidermonkey with homebrew `brew install spidermonkey`, or your favorite package
 manager.
 
@@ -32,9 +32,7 @@ Run the interpreter from the `src/` directory:
 To exit the interpreter, evaluate `(quit)`.
 
 The Javascript evaluated in the interpreter is same as the output of the
-compilation in the browser. Any differences in behavior are likely a result of
-discrepencies between the Spidermonkey backend and other Javascript
-environments.
+compilation in the browser. 
 
 ###jacket standard library
 
@@ -72,18 +70,6 @@ fib.js:
 		}
 	};
 	
-###jacket: to do
-
-Jacket currently provides minimal functionality; there are still plenty of
-issues to iron out. 
-
-`translator.js` - Fix code generation bugs. 
-
-`wellness.js`   - Add useful error messages.
-
-`repl.js`       - Implement history for interactive interpreter.
-
-`tests.js`      - Write test for code generation.
 
 ###license
 jacket is MIT licensed.
