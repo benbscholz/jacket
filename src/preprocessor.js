@@ -1,110 +1,112 @@
-/**
- * _preprocess: string -> string
- *
- * Removes/transforms illegal characters ("?" to "_bool"), transforms 
- * primitive operations into function calls, and distinguishes strings
- * from symbols with the "_str" annotation. Extra whitespace, tabs, 
- * and newlines are also removed at this time. 
- *
- */
-var _preprocess = function (source) {
-	
-	var i, sstate, code = "";
 
-	for (i = 0; i < source.length; i++) {
+exports.quote_indices = function (source) {
+	var i, last, indices = [];
+	for (i = 0; i < source.length; i += 1) {
+		if (source.charCodeAt(i) == 39) {
+			if (indices[indices.length-1] === (i-1)) 
+				indices.pop();
+			else 
+				indices.push(i);
+		}
+	}
+	return indices;
+};
+
+exports.is_in_quote = function (index, indices) {
+	var i;
+	for (i = 0; i < indices.length-1; i += 2) {
+		if (index > indices[i] && index < indices[i+1])
+			return true;
+	}
+	return false;
+};
+
+exports.preprocess = function (source) {
+	
+	var i, space_state, code = '', indices = exports.quote_indices(source);
+
+	for (i = 0; i < source.length; i += 1) {
+		if (exports.is_in_quote(i, indices)) {
+			code += source[i];
+			continue;
+		}
 		switch (source[i]) {
-			// '*' -> 'mult_proc'
 			case '*':
-				sstate = false;
-				code += "mult_proc";
+				space_state = false;
+				code += 'mlt_proc';
 				break;
-			// '+' -> 'add_proc'
-			case '+':
-				sstate = false;
-				code += "add_proc";
-				break;
-			// '-' -> 'sub_proc'
-			case '-':
-				sstate = false;
-				code += "sub_proc";
-				break;
-			// '/' -> 'div_proc'
 			case '/':
-				sstate = false;
-				code += "div_proc";
+				space_state = false;
+				code += 'div_proc';
 				break;
-			// '%' -> 'mod_proc'
+			case '+':
+				space_state = false;
+				code += 'add_proc';
+				break;
+			case '-':
+				space_state = false;
+				if (source[i+1] === ' ')
+					code += 'sub_proc';
+				else
+					code += '_';
+				break;
 			case '%':
-				sstate = false;
-				code += "mod_proc";
+				space_state = false;
+				code += 'mod_proc';
 				break;
-			// '<' -> 'lt_proc'
-			// '<=' -> 'lte_proc'
-			case '<':
-				sstate = false;
-				if (source[i+1] == "=") {
-					code += "lte_proc";
-					i++;
-				} else {
-					code += "lt_proc";
-				}
-				break;
-			// '>' -> 'gt_proc'
-			// '>=' -> 'gte_proc'
-			case '>':
-				sstate = false;
-				if (source[i+1] == "=") {
-					code += "gte_proc";
-					i++;		
-				} else {
-					code += "gt_proc";
-				}
-				break;
-			// '=' -> 'eq_proc'
 			case '=':
-				sstate = false;
-				code += "eq_proc";
+				space_state = false;
+				code += 'eql_proc';
 				break;
-			// '?' -> '_bool'
-			case '?':
-				sstate = false;
-				code += "_bool";
-				break;
-			// '!' -> '_bang'
-			case '!':
-				sstate = false;
-				code += "_bang";
-				break;
-			// ignore lines beginning with ';'
-			case ';':
-				while (source[i] !== '\n' && i !== source.length) {
-					i++;
+			case '<':
+				space_state = false;
+				if (source[i+1] === '=') {
+					code += 'lte_proc';
+					i += 1;
+				} else {
+					code += 'lt_proc';
 				}
 				break;
-			// "apple" -> "\"apple\""
-			case '"':
-				sstate = false;
-				code += "\"";
+			case '>':
+				space_state = false;
+				if (source[i+1] === '=') {
+					code += 'gte_proc';
+					i += 1;
+				} else {
+					code += 'gt_proc';
+				}
 				break;
-			// '(1 2 3 4) -> (quote 1 2 3 4)
-			// this behavior is incorrect
-			case "'":
-				sstate = false;
-				code += "(quote ";
-				i++;
+			case '?':
+				space_state = false;
+				code += '_bool';
 				break;
-			// remove spaces
-			case ' ':
-				if (sstate == false) {
-					sstate = true;
-					code += source[i];
-				} 
-				break;		
-			case '\n':
+			case '!':
+				space_state = false;
+				code += '_bang';
+				break;
+			case ';':
+				i = source.indexOf('\n', i);
+				break;
+			case '(':
+				space_state = false;
+				code += ' ( ';
+				break;
+			case ')':
+				space_state = false;
+				code += ' ) ';
+				break;
 			case '\t':
+			case '\n':
+				space_state = false;
 				break;
-			default:				
-				sstate = false;
+			case ' ':
+				if (!space_state) {
+					space_state = true;
+					code += ' ';
+				}
+				break;
+			default:
+				space_state = false;
 				code += source[i];
 		}
 	}
@@ -112,16 +114,14 @@ var _preprocess = function (source) {
 	return code;
 };
 
-/**
- * _is_array: a -> boolean
- *
- * Returns true if argument is an array, false otherwise.
- */
-var _is_array = function (item) {
+exports.is_array = function (item) {
 	if (item && typeof item === 'object' && item.constructor === Array)
 		return true;
 	else if (Object.prototype.toString.call(item) === '[object Array]')
 		return true;
-	else
-		return false;
+	return false;
 };
+
+
+
+

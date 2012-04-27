@@ -8,7 +8,7 @@
  * 
  *
  */
-var _translate = function (x) {
+exports.translate = function (x) {
 
 	var build_cond = function (x) {
 		var begin = "",
@@ -38,12 +38,12 @@ var _translate = function (x) {
 	};
 	
 	var build_set = function (x) {
-		return x[1] + " = " + trans(x[2]);
+		return x[1] + " = " + trans(x[2]) + ";";
 	};
 	
 	var build_begin = function (x) {
 		var i, code;
-		code = "function () {";
+		code = "return function () {";
 		for (i = 1; i < x.length; i += 1) {
 			if (i === x.length-1) {
 				code += trans(x[i], true) + ";";
@@ -60,15 +60,17 @@ var _translate = function (x) {
 		if (x[1] instanceof Array) {
 			code = "var " + x[1][0] + " = ";
 			code += build_lambda([,x[1].slice(1, x[1].length), x[2]]);
-		} else {
+		} else if (x.length === 3) {
 			code = "var " + x[1] + " = " + trans(x[2]);
+		} else {
+			code = "var " + x[1];
 		}
 		return code + ";";
 	};
 	
 	var build_lambda = function (x) {
 		return "function (" + build_parameters(x[1]) + 
-			   ") {" + trans(x[2], true) + "}";
+			   ") {" + trans(x[2], true) + ";}";
 	};
 	
 	var build_procedure = function (x) {
@@ -84,22 +86,11 @@ var _translate = function (x) {
 		return code.join();
 	};
 	
-	var build_quote = function (x) {
-		var i, quote = "[";
-		for (i = 1; i < x.length; i++) {
-			quote += x[i] + ",";
-		}
-		quote = quote.slice(0,-1) + "]";
-		return quote;
-	};
-	
 	var trans = function (x, in_func) {
 		var ret, code = "";
 		ret = in_func ? "return " : "";
 		if (typeof x === "string" || !(x instanceof Array)) {
 			return ret + x;
-		} else if (x[0] === "quote") {
-			return build_quote(x);
 		} else if (x[0] === "if") {
 			return build_if(x);
 		} else if (x[0] === "cond") {
@@ -116,9 +107,11 @@ var _translate = function (x) {
 			return ret + build_procedure(x);
 		}
 	};
+	
+	var prep = require('./preprocessor');
 
 	var i, out = "";
-	if (_is_array(x)) {
+	if (prep.is_array(x)) {
 		for (i = 0; i < x.length; i++) {
 			out += trans(x[i], false) + " ";
 		}

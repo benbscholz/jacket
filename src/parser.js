@@ -6,14 +6,31 @@
  *		(map (lambda (x) (first x)) ls) --->
  *			["map", ["lambda", ["x"], ["first", "x"]], "ls"]
  */
-var _parse = function (source) {
+exports.parse = function (source) {
+	
+	var quote_indices = require('./preprocessor').quote_indices;
+	var is_in_quote   = require('./preprocessor').is_in_quote;
 	
 	var tokenize = function (s) {
-		var tokens = s.replace(/\(/g, ' ( ')
-					  .replace(/\)/g, ' ) ')
-					  .split(" ")
-					  .filter(function (x) {return (x != '');});
+		var tokens = split_source(s).filter(function (x) {return x !== '';})
+									.map(function (x) {return x.trim();});
 		return tokens;
+	};
+
+	 split_source = function (s) {
+		var atom,
+			current,
+		    previous = 0,
+			indices = quote_indices(s),
+			split = [];
+		for (current = 0; current < s.length; current += 1) {
+			if (!is_in_quote(current, indices) && s[current] === ' ') {
+				atom = s.slice(previous, current);
+				split.push(atom);
+				previous = current + 1;
+			}	
+		}
+		return split;
 	};
 	
 	var atom = function (token) {
