@@ -3,92 +3,87 @@
  *
  * Parses the jacket source code into a syntax tree.
  *
- *		(map (lambda (x) (first x)) ls) --->
- *			["map", ["lambda", ["x"], ["first", "x"]], "ls"]
+ *    (map (lambda (x) (first x)) ls) --->
+ *      ["map", ["lambda", ["x"], ["first", "x"]], "ls"]
  */
+
+var _ = require('underscore');
+
 exports.parse = function (source) {
-	
-	var quote_indices = require('./preprocessor').quote_indices;
-	var is_in_quote   = require('./preprocessor').is_in_quote;
-	
-	var tokenize = function (s) {
-		var tokens = split_source(s).filter(function (x) {return x !== '';})
-									.map(function (x) {return x.trim();});
-		return tokens;
-	};
+  
+  var tokenize = function (s) {
+    return _.map(_.filter(split_source(s), function (x) {
+      return x !== '';
+    }), function (elem) {
+      return elem.trim();
+    });
+  };
 
-	 split_source = function (s) {
-		var atom,
-			current,
-		    previous = 0,
-			indices = quote_indices(s),
-			split = [];
-		for (current = 0; current < s.length; current += 1) {
-			if (!is_in_quote(current, indices) && s[current] === ' ') {
-				atom = s.slice(previous, current);
-				split.push(atom);
-				previous = current + 1;
-			}	
-		}
-		return split;
-	};
-	
-	var atom = function (token) {
-		if (String(Number(token)) !== "NaN") {
-			return Number(token);
-		} else {
-			return token;
-		}
-	};
-	
-	var read_from = function (tokens) {
-		var L,
-			Ls = [],
-			token,
-			trimmed;
-		if (tokens.length === 0) {
-			return;
-		}
-		token = tokens.shift();
-		if ('(' === token) {
-			L = [];
-			while (tokens[0] !== ')') {
-				L.push(read_from(tokens));
-			}
-			tokens.shift();
-			return L;
-		} else if (')' === token) {
-			throw new Error("Syntax Error: Unexpected )");
-		} else {
-			return atom(token);
-		}
-	};
-	
-	var read_exps = function (tokens) {
-		var Ls = [],
-			trimmed = tokens;
-		while (trim_exp(trimmed) !== undefined) {
-			Ls.push(read_from(trimmed));
-		}
-		return Ls;
-	};
-	
-	var trim_exp = function (tokens) {
-		var curr,
-			i,
-			depth = 0;
-		for (i = 0; i < tokens.length; i += 1) {
-			if (tokens[i] === "(") {
-				depth += 1;
-			} else if (tokens[i] === ")") {
-				depth -= 1;
-			} 
-			if (depth === 0) {
-				return tokens.slice(i+1, -1);
-			}
-		}	
-	};
+  var split_source = function (s) {
+    var split = [],
+        quote_state = false,
+        begin, end;
+    for (begin = 0, end = 0; end < s.length; end += 1) {
+      if (!quote_state && s[end] === ' ') {
+        split.push(s.slice(begin, end));
+        begin = end + 1;
+      } else if (s[end] === '"') {
+        quote_state = !quote_state;
+      }
+    }
+    return split;
+  };
 
-	return read_exps(tokenize(source));
+  var atom = function (token) {
+    if (String(Number(token)) !== "NaN") {
+      return Number(token);
+    } else {
+      return token;
+    }
+  };
+  
+  var read_from = function (tokens) {
+    var exp, token, trimmed;
+    if (tokens.length === 0) {
+      return;
+    }
+    token = tokens.shift();
+    if ('(' === token) {
+      exp = [];
+      while (tokens[0] !== ')') {
+        exp.push(read_from(tokens));
+      }
+      tokens.shift();
+      return exp;
+    } else if (')' === token) {
+      throw new Error("Syntax Error: Unexpected )");
+    } else {
+      return atom(token);
+    }
+  };
+  
+  var read_exps = function (tokens) {
+    var exps = [];
+    while (trim_exp(tokens) !== undefined) {
+      exps.push(read_from(tokens));
+    }
+    return exps;
+  };
+  
+  var trim_exp = function (tokens) {
+    var i, depth = 0;
+    for (i = 0; i < tokens.length; i += 1) {
+      if (tokens[i] === "(") {
+        depth += 1;
+      } else if (tokens[i] === ")") {
+        depth -= 1;
+      } 
+      if (depth === 0) {
+        return tokens.slice(i+1, -1);
+      }
+    } 
+  };
+
+  return read_exps(tokenize(source));
 };
 

@@ -19,3 +19,4 @@ load("../src/preprocessor.js");
 load("../src/parser.js");
 load("../src/translator.js");
 load("tests/translator_test.js");
+load("tests/jacket_test.js");

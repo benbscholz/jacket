@@ -1,3 +1,4 @@
+;; jacket standard library
 
 (define (foldr f init l)
 	(if (empty? l)
@@ -51,4 +52,7 @@
 					
 (define (drop l n) 
 	(take (reverse l) n))
+
+
+
 

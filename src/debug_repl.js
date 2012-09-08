@@ -5,25 +5,26 @@
  */
 var _debug_js = function () {
 	var fs         = require('fs'),
+			_          = require('underscore'),
 	    readline   = require('readline'),		
-		beautify   = require('beautifyjs').js_beautify,
+		  beautify   = require('beautifyjs').js_beautify,
 	    colors     = require('colors'),
 	    compile    = require('./compile').compile,
-	    preprocess = require('./source/preprocessor').preprocess,
+	    preprocess = require('./preprocessor').preprocess,
 	    parse      = require('./parser').parse,
 	    translate  = require('./translator').translate,
 	    wellness   = require('./wellness').wellness;
 
 	var show_array = function (item) {
-		var i, array_str;	
-
-		if (_isArray(item)) {
-			array_str = "[";
-			for (i = 0; i < item.length; i += 1) 
-				array_str += show_array(item[i]) + ", ";
-			return beautify(array_str.slice(0, -2) + "]");
+		if (_.isArray(item)) {
+			return beautify(_.map(item, function (elem, val) {
+				if (val === 0)
+					return "[" + show_array(elem);
+				return show_array(elem);
+			}).join(', ')) + "]";
+		} else {
+			return item;
 		}
-		return item;
 	};
 
 	var show_preprocessed = function (preprocessed) {
@@ -42,7 +43,7 @@ var _debug_js = function () {
 	};
 
 	var show_evaluated = function (evaluated) {
-		out = _isArray(evaluated) ? show_array(evaluated) : evaluated;
+		out = _.isArray(evaluated) ? show_array(evaluated) : evaluated;
 		process.stdout.write("Evaluated:\n    ".green);
 		console.log(out);
 	};
@@ -72,7 +73,7 @@ var _debug_js = function () {
 				show_preprocessed(preprocessed);
 				show_parsed(parsed);
 				show_translated(beautify(translated));
-				show_evaluated(global_eval(translated));
+				// show_evaluated(global_eval(translated));
 				jacket.setPrompt("db > ");
 				code = "";
 			} else {
@@ -100,9 +101,19 @@ var _debug_js = function () {
 		console.log("## v0.1        ##");
 		console.log("#################");
 
-		built_ins = fs.readFileSync('built_ins.js', 'utf8');
-		stdlib    = fs.readFileSync('source/stdlib.js', 'utf8');
+		built_ins = fs.readFileSync('built_ins.js');
 
-		loop(built_ins, stdlib);
+		if (process.argv.length === 3) {
+			var source = fs.readFileSync(process.argv[2], 'utf8');
+			var preprocessed = preprocess(source);
+			var parsed       = parse(preprocessed);
+			var translated   = translate(parsed);
+
+			show_preprocessed(preprocessed);
+			show_parsed(parsed);
+			show_translated(beautify(translated));
+		} else {
+			loop(built_ins, stdlib);
+		}
 	}();
 }();

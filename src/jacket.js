@@ -12,7 +12,7 @@ var compile_to_file = function () {
 	var stdlib      = fs.readFileSync('source/stdlib.js', 'utf8');
 	var global_eval = eval;
 	
-	var preprocess  = require('./preprocessor').preprocess;
+	var preprocess  = require('./source/preprocessor').preprocess;
 	var parse       = require('./parser').parse;
 	var translate   = require('./translator').translate;
 	var well        = require('./wellness').wellness;

@@ -1,36 +1,22 @@
-
-exports.quote_indices = function (source) {
-	var i, last, indices = [];
-	for (i = 0; i < source.length; i += 1) {
-		if (source.charCodeAt(i) == 39) {
-			if (indices[indices.length-1] === (i-1)) 
-				indices.pop();
-			else 
-				indices.push(i);
-		}
-	}
-	return indices;
-};
-
-exports.is_in_quote = function (index, indices) {
-	var i;
-	for (i = 0; i < indices.length-1; i += 2) {
-		if (index > indices[i] && index < indices[i+1])
-			return true;
-	}
-	return false;
-};
+// preprocessor
 
 exports.preprocess = function (source) {
 	
-	var i, space_state, code = '', indices = exports.quote_indices(source);
+	var i 
+	  , quote_state = false 
+		, space_state = false 
+		, code = '';
 
 	for (i = 0; i < source.length; i += 1) {
-		if (exports.is_in_quote(i, indices)) {
+		if (quote_state && source[i] !== '"') {
 			code += source[i];
 			continue;
-		}
+	  }
 		switch (source[i]) {
+			case '"':
+				quote_state = !quote_state;
+				code += '"'
+				break;
 			case '*':
 				space_state = false;
 				code += 'mlt_proc';
@@ -113,15 +99,3 @@ exports.preprocess = function (source) {
 
 	return code;
 };
-
-exports.is_array = function (item) {
-	if (item && typeof item === 'object' && item.constructor === Array)
-		return true;
-	else if (Object.prototype.toString.call(item) === '[object Array]')
-		return true;
-	return false;
-};
-
-
-
-

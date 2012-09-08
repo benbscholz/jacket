@@ -1,10 +1,10 @@
 /**
- * _wellness: string -> boolean
+ * wellness: string -> boolean
  *
  * Returns true if the parentheses are matched and balanced,
  * false otherwise.
  */
-var _wellness = function (source) {
+exports.wellness = function (source) {
 
 	var well = function (s) {
 		var i, parens = [], prev_len, curr_len, paren_str;

@@ -5,95 +5,11 @@
  * ex: 
  *		'*' -> 'mult_proc'
  */
-var add_proc = function () {
-	var i,
-		val;
-	if (typeof arguments[0] === "string")
-		val = '';
-	else
-		val = 0;
-	for (i = 0; i < arguments.length; i += 1) {
-		val += arguments[i];
-	}
-	return val;
-};
 
-var mlt_proc = function () {
-	var i,
-		val = 1;
-	for (i = 0; i < arguments.length; i += 1) {
-		val *= arguments[i];
-	}
-	return val;
-};
-
-var sub_proc = function () {
-	var i,
-		val = arguments[0];
-	for (i = 1; i < arguments.length; i += 1) {
-		val -= arguments[i];
-	}	
-	return val;
-};
-
-var div_proc = function () {
-	var i,
-		val = arguments[0];
-	for (i = 1; i < arguments.length; i += 1) {
-		val /= arguments[i];
-	}	
-	return val;
-};
-
-var and = function () {
-	var args = [],
-		i,
-		bool = arguments[0];
-	for (i = 1; i < arguments.length; i += 1) {
-		bool = bool && arguments[i];
-	}
-	return bool;
-};
-
-var list = function () { 
-	var args = [],
-		i;
-	for (i = 0; i < arguments.length; i += 1) {
-		args.push(arguments[i]);
-	}
-	args.push([]);
-	return args;
-};
-
-var vector_set = function (v, p, val) {
-	var a = v;
-	a[p] = val;
-	return a;
-};
-
-var vector_ref = function (v, p) {
-	return v[p];
-};
-
-var build_list = function (n) {
-	var i, l = [];
-	for (i = 0; i < n; i += 1) {
-		l.push(i);
-	}
-	return l;
-};
-
-var _isArray = function (item) {
-	if (item && typeof item === 'object' && item.constructor === Array)
-		return true;
-	else if (Object.prototype.toString.call(item) == '[object Array]')
-		return true;
-	else
-		return false;
-};	
+var _ = require('underscore');
 
 var append = function (l, v) {
-	if (_isArray(l)) {
+	if (_.isArray(l)) {
 		l.push(v);
 		return l;
 	} else {
@@ -101,21 +17,10 @@ var append = function (l, v) {
 	}
 };
 
-var mod_proc = function (a,b) {return a%b;};
-var lt_proc = function (a,b) {return a<b;};
-var gt_proc = function (a,b) {return a>b;};
-var lte_proc = function (a,b) {return a<=b;};
-var gte_proc = function (a,b) {return a>=b;};
-var eql_proc = function (a,b) {return a===b;};
+var _typeof = function (a) {return typeof a;};
+var _instanceof = function (a,b) {return a instanceof b;};
 var car = function (a) {return a[0];};
-var cdr = function (a) {
-	var isa = _isArray(a);
-	if (!isa || a.length === 1) {
-		return [];
-	} else {	
-		return a.slice(1,a.length);
-	}
-};
+var cdr = function (a) {return (a.length === 1) ? [] : _.rest(a);};
 var first = car;
 var rest = cdr;
 var cons = function (a,b) {
