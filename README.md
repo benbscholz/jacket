@@ -1,17 +1,4 @@
 
-
-(define (get-document request response)
-	(if (not (= (request.session.user null)))
-			(models.Document.find 
-				(hash ('name' request.body.name)
-			  			('author' request.body.author)) 
-			  (lambda (error document)
-			  	(if (not (= (error null)))
-			  			(begin (console.log error) (response.send 500))
-			  			(response.send document 200))))))
-
-
-
 ##jacket
 ####compiles a subset of Scheme to Javascript
 
