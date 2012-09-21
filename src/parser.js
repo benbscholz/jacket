@@ -11,79 +11,55 @@ var _ = require('underscore');
 
 exports.parse = function (source) {
   
-  var tokenize = function (s) {
-    return _.map(_.filter(split_source(s), function (x) {
-      return x !== '';
-    }), function (elem) {
-      return elem.trim();
-    });
-  };
+  function tokenType (token) {
+    return token[0];
+  }
 
-  var split_source = function (s) {
-    var split = [],
-        quote_state = false,
-        begin, end;
-    for (begin = 0, end = 0; end < s.length; end += 1) {
-      if (!quote_state && s[end] === ' ') {
-        split.push(s.slice(begin, end));
-        begin = end + 1;
-      } else if (s[end] === '"') {
-        quote_state = !quote_state;
-      }
-    }
-    return split;
-  };
+  function tokenValue (token) {
+    return token[1];
+  }
 
-  var atom = function (token) {
-    if (String(Number(token)) !== "NaN") {
-      return Number(token);
-    } else {
-      return token;
-    }
-  };
-  
-  var read_from = function (tokens) {
-    var exp, token, trimmed;
-    if (tokens.length === 0) {
-      return;
-    }
+  function tokenLine (token) {
+    return token[2];
+  }
+
+  function parse (tokens) {
+    var i, expression, token;
+    var expressions = [];
+
+    if (tokens.length === 0) return;
+
     token = tokens.shift();
-    if ('(' === token) {
-      exp = [];
-      while (tokens[0] !== ')') {
-        exp.push(read_from(tokens));
-      }
-      tokens.shift();
-      return exp;
-    } else if (')' === token) {
-      throw new Error("Syntax Error: Unexpected )");
-    } else {
-      return atom(token);
+    switch (tokenType(token)) {
+      case 'OPEN_PARENTHESIS':
+        expression = [];
+        while (tokenType(tokens[0]) !== 'CLOSE_PARENTHESIS') {
+          expression.push(parse(tokens));
+        }
+        tokens.shift();
+        return expression;
+      case 'CLOSE_PARENTHESIS':
+        throw new SyntaxError('Unexpected \')\' on line ' + tokenTime(token) + '.');
+      default:
+        return token;
     }
-  };
-  
-  var read_exps = function (tokens) {
-    var exps = [];
-    while (trim_exp(tokens) !== undefined) {
-      exps.push(read_from(tokens));
-    }
-    return exps;
-  };
-  
-  var trim_exp = function (tokens) {
-    var i, depth = 0;
-    for (i = 0; i < tokens.length; i += 1) {
-      if (tokens[i] === "(") {
-        depth += 1;
-      } else if (tokens[i] === ")") {
-        depth -= 1;
-      } 
-      if (depth === 0) {
-        return tokens.slice(i+1, -1);
-      }
-    } 
-  };
 
-  return read_exps(tokenize(source));
+    return parsed;
+  }
+
+  return parse(source);
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
 

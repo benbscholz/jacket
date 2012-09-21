@@ -5,14 +5,18 @@
  */
 var _     = require('underscore');
 
+var JKT   = require('./generator');
+
 exports.translate = function (expressions) {
 
   var SINGLE_EQUAL = ' = ';
   var TRIPLE_EQUAL = ' === ';
 
   var SEMICOLON    = ';';
+  var COMMA        = ', ';
   var VAR          = 'var ';
   var RETURN       = 'return ';
+  var IN           = ' in ';
 
   var OPEN_NOT     = '!( ';
   var CLOSE_NOT    = ')';
@@ -22,8 +26,11 @@ exports.translate = function (expressions) {
 
   var OPEN_IF      = 'if (';
   var CLOSE_IF     = ') {';
-  var OPEN_ELSE    = '} else {';
-  var OPEN_ELSE_IF = '} else if (';
+  var OPEN_ELSE    = 'else {';
+  var OPEN_ELSE_IF = 'else if (';
+
+  var OPEN_FOR     = 'for (';
+  var CLOSE_FOR    = ') {';
 
   var OPEN_FUNC    = 'function (';
   var CLOSE_FUNC   = ') {';
@@ -113,7 +120,8 @@ exports.translate = function (expressions) {
 
     var translate = function () {
       validate();
-      return OPEN_FUNC + parameters(LAMBDA_ARGS) + CLOSE_FUNC + JKT_TRANSLATE(LAMBDA_BODY) + CLOSE_BODY;
+      PREFIX = (_.first(LAMBDA_BODY) === 'cond' || _.first(LAMBDA_BODY) === 'if' || _.first(LAMBDA_BODY) === 'let') ? '' : RETURN;
+      return OPEN_FUNC + parameters(LAMBDA_ARGS) + CLOSE_FUNC + PREFIX + JKT_TRANSLATE(LAMBDA_BODY) + SEMICOLON + CLOSE_BODY;
     }
 
     return translate();
@@ -125,6 +133,9 @@ exports.translate = function (expressions) {
     var LET_VARS = expression[1];
     var LET_BODY = expression[2];
     var EMPTY    = expression[3];
+
+    console.log('let');
+    console.log(expression);
 
     var validate = function () {
 
@@ -138,9 +149,9 @@ exports.translate = function (expressions) {
 
     var translate = function () {
       validate();
-      return _.reduce(LET_VARS, function (memo, variable) {
-        return memo + VAR + variable[0] + SINGLE_EQUAL + JKT_TRANSLATE(variable[1]) + SEMICOLON;
-      }, RETURN + OPEN_CALL) + JKT_TRANSLATE(LET_BODY) + CLOSE_CALL;
+      return _.reduce(LET_VARS, function (memo, LET_VAR, index) {
+        return memo + VAR + LET_VAR[0] + SINGLE_EQUAL + JKT_TRANSLATE(LET_VAR[1]) + SEMICOLON;
+      }, RETURN + OPEN_CALL) + JKT_TRANSLATE(LET_BODY) + SEMICOLON + CLOSE_CALL; 
     };
 
     return translate();
@@ -156,8 +167,6 @@ exports.translate = function (expressions) {
     var validate = function () {
 
       // Are there a proper number of arguments?
-      if (HASH_VALS === undefined)
-        throw new SyntaxError('Hash expects one argument, but you provided none.');
       if (EMPTY !== undefined)
         throw new SyntaxError('Hash expects one argument, but you provided more.');
 
@@ -171,11 +180,13 @@ exports.translate = function (expressions) {
 
     var translate = function () {
       validate();
-      return _.reduce(HASH_VALS, function (memo, HASH_VAL, index) {
+      return (_.reduce(HASH_VALS, function (memo, HASH_VAL, index) {
         var end = (index === HASH_VALS.length - 1) ? '' : ',';
         return memo + _.first(HASH_VAL) + ':' + JKT_TRANSLATE(_.last(HASH_VAL)) + end;
-      }, '{') + '}';
-    };
+      }, '{') + '}') || '{}';
+    } ;
+
+    return translate();
   };
 
   var JKT_SET = function (expression) {
@@ -203,11 +214,57 @@ exports.translate = function (expressions) {
 
     var translate = function () {
       validate();
-      return VAR + SET_VAR + SINGLE_EQUAL + JKT_TRANSLATE(SET_VAL) + SEMICOLON;
+      return SET_VAR + SINGLE_EQUAL + JKT_TRANSLATE(SET_VAL) + SEMICOLON;
     };
 
     return translate();
 
+  };
+
+  var JKT_DO = function (expression) {
+
+  	var DO_DECL = expression[0];
+  	var DO_VARS = expression[1];
+  	var DO_COND = expression[2];
+  	var DO_BODY = expression[3];
+    var EMPTY   = expression[4];
+
+  	var validate = function () {
+
+      // Are there a proper number of arguments?
+      if (EMPTY !== undefined)
+        throw new SyntaxError('Do expects three arguments, but you provided more.');
+
+  	};
+
+  	var translate = function () {
+      validate();
+
+      var declaration = _.reduce(DO_VARS, function (memo, DO_VAR, index) {
+        return memo + VAR + JKT_TRANSLATE(DO_VAR[0]) + SEMICOLON;
+      }, '');
+
+      var assignment = _.reduce(DO_VARS, function (memo, DO_VAR, index) {
+        var SUFFIX = (index === DO_VARS.length - 1) ? '' : COMMA;
+        return memo + JKT_TRANSLATE(DO_VAR[0]) + SINGLE_EQUAL + JKT_TRANSLATE(DO_VAR[1]) + SUFFIX;
+      }, '') + SEMICOLON;
+
+      var condition = JKT_TRANSLATE(DO_COND[0]) + SEMICOLON;
+
+      var step = _.reduce(DO_VARS, function (memo, DO_VAR, index) {
+        var SUFFIX = (index === DO_VARS.length - 1) ? '' : COMMA;
+        var LEFT   = JKT_TRANSLATE(DO_VAR[0]);
+        var RIGHT  = JKT_TRANSLATE(DO_VAR[2]);
+        return (LEFT === RIGHT) ? memo : memo + LEFT + SINGLE_EQUAL + RIGHT + SUFFIX;
+      }, '');
+
+      var post = (DO_COND[1] !== undefined) ? RETURN + JKT_TRANSLATE(DO_COND[1]) + SEMICOLON : '';
+
+      return OPEN_CALL + declaration + OPEN_FOR + assignment + condition + step + CLOSE_FOR + JKT_TRANSLATE(DO_BODY) + post + CLOSE_CALL;
+  	};
+
+  	return translate();
+  	
   };
 
   var JKT_IF = function (expression) {
@@ -221,8 +278,8 @@ exports.translate = function (expressions) {
     var validate = function () {
 
       // Are there a proper number of arguments?
-      if (IF_FALSE === undefined)
-        throw new SyntaxError('If expects three arguments, but you provided fewer.');
+      // if (IF_FALSE === undefined)
+        // throw new SyntaxError('If expects three arguments, but you provided fewer.');
       if (EMPTY !== undefined)
         throw new SyntaxError('If expects three arguments, but provided more');
 
@@ -230,9 +287,11 @@ exports.translate = function (expressions) {
 
     var translate = function () {
       validate();
-      return OPEN_IF + JKT_TRANSLATE(IF_BOOL) + CLOSE_IF + 
-             RETURN + JKT_TRANSLATE(IF_TRUE) + SEMICOLON + OPEN_ELSE + 
-             RETURN + JKT_TRANSLATE(IF_FALSE) + SEMICOLON + CLOSE_BODY;
+      return (IF_FALSE === undefined) ?
+        JKT.cond.if(JKT_TRANSLATE(IF_BOOL), JKT_TRANSLATE(IF_TRUE))
+      : OPEN_IF + JKT_TRANSLATE(IF_BOOL) + CLOSE_IF + 
+        RETURN + JKT_TRANSLATE(IF_TRUE) + SEMICOLON + CLOSE_BODY + OPEN_ELSE + 
+        RETURN + JKT_TRANSLATE(IF_FALSE) + SEMICOLON + CLOSE_BODY;
     };
 
     return translate();
@@ -241,19 +300,16 @@ exports.translate = function (expressions) {
 
   var JKT_COND = function (expression) {
 
-    var COND_DECL = expression[0];
-    var COND_EXPS = expression[1];
-    var EMPTY     = expression[2];
+    var COND_DECL = _.first(expression);
+    var COND_EXPS = _.rest(expression);
 
     var validate = function () {
 
       // Are there a proper number of arguments?
       if (COND_EXPS === undefined)
         throw new SyntaxError('Cond expects one argument, but you provided none.');
-      if (EMPTY !== undefined) 
-        throw new SyntaxError('Cond expects one argument, but you provided more.');
 
-      _.each(COND_EXPS, function (index, COND_EXP){
+      _.each(COND_EXPS, function (COND_EXP){
         // Are there a proper number of arguments?
         if (COND_EXP.length !== 2)
           throw new SyntaxError('Cond statements expect two arguments, but you provided ' + COND_EXP.length + '.');
@@ -264,12 +320,12 @@ exports.translate = function (expressions) {
     var translate = function () {
       validate();
       return _.reduce(COND_EXPS, function (memo, COND_EXP) {
-        if (_.first(COND_EXPS) === 'else')
-          return memo + OPEN_ELSE + JKT_TRANSLATE(COND_EXP[1]) + SEMICOLON + CLOSE_BODY;
+        if (_.first(COND_EXP) === 'else')
+          return memo + OPEN_ELSE + RETURN + JKT_TRANSLATE(COND_EXP[1]) + SEMICOLON + CLOSE_BODY;
         else if (memo === '')
-          return memo + OPEN_IF + JKT_TRANSLATE(COND_EXP[1]) + CLOSE_IF + JKT_TRANSLATE(COND_EXP[2]) + SEMICOLON + CLOSE_BODY;
+          return memo + OPEN_IF + JKT_TRANSLATE(COND_EXP[0]) + CLOSE_IF + RETURN + JKT_TRANSLATE(COND_EXP[1]) + SEMICOLON + CLOSE_BODY;
         else
-          return memo + OPEN_ELSE_IF + JKT_TRANSLATE(COND_EXP[1]) + CLOSE_IF + JKT_TRANSLATE(COND_EXP[2]) + SEMICOLON + CLOSE_BODY;
+          return memo + OPEN_ELSE_IF + JKT_TRANSLATE(COND_EXP[0]) + CLOSE_IF + RETURN + JKT_TRANSLATE(COND_EXP[1]) + SEMICOLON + CLOSE_BODY;
       }, '');
     };
 
@@ -300,47 +356,48 @@ exports.translate = function (expressions) {
 
     var translate = function () {
       validate();
-      if (PROC_DECL === 'eql_proc')
-        return binary_operation('===', PROC_BODY);
-      else if (PROC_DECL === 'neql_proc')
-        return binary_operation('!==', _.flatten(PROC_BODY));
-      else if (PROC_DECL === 'or')
-        return binary_operation('||', PROC_BODY);
-      else if (PROC_DECL === 'and')
-        return binary_operation('&&', PROC_BODY);
-      else if (PROC_DECL === 'add_proc')
-        return binary_operation('+', PROC_BODY);
-      else if (PROC_DECL === 'mlt_proc')
-        return binary_operation('*', PROC_BODY);
-      else if (PROC_DECL === 'sub_proc')
-        return binary_operation('-', PROC_BODY);
-      else if (PROC_DECL === 'div_proc')
-        return binary_operation('/', PROC_BODY);
-      else if (PROC_DECL === 'div_proc')
-        return binary_operation('%', PROC_BODY);
-      else if (PROC_DECL === 'gt_proc')
-        return binary_operation('>', PROC_BODY);
-      else if (PROC_DECL === 'gte_proc')
-        return binary_operation('>=', PROC_BODY);
-      else if (PROC_DECL === 'lt_proc')
-        return binary_operation('<', PROC_BODY);
-      else if (PROC_DECL === 'lte_proc')
-        return binary_operation('<=', PROC_BODY);
-      else if (PROC_DECL === '_bool')
-      	return PROC_BODY.push('null') && JKT_PROCEDURE(['neql_proc', PROC_BODY])
-	    else if (PROC_DECL === 'list')
-        return OPEN_BRACKET + _.map(PROC_BODY, JKT_TRANSLATE).join() + CLOSE_BRACKET;
-      else if (PROC_DECL === 'vector_set')
-        return JKT_TRANSLATE(PROC_BODY[0]) + OPEN_BRACKET + JKT_TRANSLATE(PROC_BODY[1]) + CLOSE_BRACKET + SINGLE_EQUAL + JKT_TRANSLATE(PROC_BODY[2]) + SEMICOLON;
-      else if (PROC_DECL === 'vector_ref')
-        return JKT_TRANSLATE(PROC_BODY[0]) + OPEN_BRACKET + JKT_TRANSLATE(PROC_BODY[1]) + CLOSE_BRACKET;
-      else if (PROC_DECL === 'not')
-        if (_.first(_.first(PROC_BODY)) === 'eql_proc')
-          return JKT_PROCEDURE(['neql_proc', _.first(_.rest(_.first(PROC_BODY)))]);
-        else
-          return OPEN_NOT + JKT_TRANSLATE(_.first(PROC_BODY)) + CLOSE_CALL;
-      else
-        return PROC_DECL + '(' + _.map(PROC_BODY, JKT_TRANSLATE).join() + ')';
+      switch (PROC_DECL) {
+        case '+':
+        case '*':
+        case '/':
+        case '-':
+        case '%':
+        case '<':
+        case '>':
+        case '<=':
+        case '>=':
+          return binary_operation(PROC_DECL, PROC_BODY);
+        case '=':
+          return binary_operation('===', PROC_BODY);
+        case 'or':
+          return binary_operation('||', PROC_BODY);
+        case 'and':
+          return binary_operation('&&', PROC_BODY);
+        case 'call':
+          return JKT_TRANSLATE(_.first(PROC_BODY)) + '();';
+        case 'in':
+          return JKT_TRANSLATE(_.first(PROC_BODY)) + IN + JKT_TRANSLATE(_.last(PROC_BODY));
+        case 'list':
+          return OPEN_BRACKET + _.map(PROC_BODY, JKT_TRANSLATE).join() + CLOSE_BRACKET;
+        case 'null_bool':
+          return PROC_BODY.unshift('eql_proc') && PROC_BODY.push('null') && JKT_TRANSLATE(PROC_BODY);
+        case 'pair_bool':
+          var obj = JKT_TRANSLATE(_.first(PROC_BODY));
+          return obj + '.isArray && ' + obj + '.isArray()';
+        case 'vector_set_bang':
+          return JKT_TRANSLATE(PROC_BODY[0]) + OPEN_BRACKET + JKT_TRANSLATE(PROC_BODY[1]) + CLOSE_BRACKET + SINGLE_EQUAL + JKT_TRANSLATE(PROC_BODY[2]) + SEMICOLON;
+        case 'vector_ref':
+          return JKT_TRANSLATE(PROC_BODY[0]) + OPEN_BRACKET + JKT_TRANSLATE(PROC_BODY[1]) + CLOSE_BRACKET;
+        case 'not':
+          if (_.first(_.first(PROC_BODY)) === '=')
+            return JKT_PROCEDURE(['neql', _.first(_.rest(_.first(PROC_BODY)))]);
+          else
+            return OPEN_NOT + JKT_TRANSLATE(_.first(PROC_BODY)) + CLOSE_CALL;
+        case 'neql':
+          return binary_operation('!==', _.flatten(PROC_BODY));
+        default:
+          return PROC_DECL + '(' + _.map(PROC_BODY, JKT_TRANSLATE).join() + ')';
+      };
     };
 
     return translate();
@@ -388,6 +445,8 @@ exports.translate = function (expressions) {
 				return JKT_SET(expression);
 			case 'define':
 				return JKT_DEFINE(expression);
+      case 'do':
+        return JKT_DO(expression);
 			case 'λ':
 			case 'lambda':
 				return JKT_LAMBDA(expression);
@@ -404,6 +463,6 @@ exports.translate = function (expressions) {
 		}
 	};
 
-	return (_.isArray(expressions)) ? _.map(expressions, JKT_TRANSLATE).join('\n\n') : JKT_TRANSLATE(expressions);
+  return (_.isArray(expressions)) ? _.map(expressions, JKT_TRANSLATE).join('\n\n') : JKT_TRANSLATE(expressions);
 };
 

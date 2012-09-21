@@ -6,7 +6,7 @@
  *		'*' -> 'mult_proc'
  */
 
-var _ = require('underscore');
+// var _ = require('underscore');
 
 var append = function (l, v) {
 	if (_.isArray(l)) {
@@ -19,24 +19,6 @@ var append = function (l, v) {
 
 var _typeof = function (a) {return typeof a;};
 var _instanceof = function (a,b) {return a instanceof b;};
-var car = function (a) {return a[0];};
-var cdr = function (a) {return (a.length === 1) ? [] : _.rest(a);};
-var first = car;
-var rest = cdr;
-var cons = function (a,b) {
-	var isa, isb;
-	isa = _isArray(a);
-	isb = _isArray(b);
-	if (isa && isb) {
-		return a.concat(b);
-	} else if (isa) {
-		return a.push(b);
-	} else if (isb) {
-		return b.push(a);
-	} else {
-		return [a,b];
-	}
-};
 var functionOf = function (o,f,a) { return o[f](a);};
 var property = function (a,b) {return a[b];}; 
 var empty_bool = function (a) {return (a instanceof Array && a.length === 0);};

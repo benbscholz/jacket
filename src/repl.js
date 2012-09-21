@@ -1,45 +1,121 @@
 #!/usr/bin/env node 
 /**
- * Interactive interepter for jacket.
- *
+ * Interactive interpreter for jacket.
+ * Debug version.
  */
-var _repl = function () {
-	var line, lines, wellness;
+var _debug_js = function () {
+	var fs         = require('fs'),
+			_          = require('underscore'),
+	    readline   = require('readline'),		
+		  beautify   = require('beautifyjs').js_beautify,
+	    colors     = require('colors'),
+	    preprocess = require('./preprocessor').preprocess,
+	    lex        = require('./lexer').lex,
+	    parse      = require('./parser').parse,
+	    translate  = require('./translator').translate;
 
-	load("preprocessor.js");
-	load("parser.js");
-	load("translator.js");
-	load("built_ins.js");	
-	load("wellness.js");
-
-	var lib = _translate(_parse(_preprocess(read("../lib/stdlib.jkt"))));
-	eval(lib);
-	print("stdlib.jkt loaded.");
-
-	print("#################");
-	print("## jacket REPL ##");
-	print("## v0.1        ##"); 
-	print("#################");
-
-	while (1) {
-		putstr("> ");
-		line = readline();
-		lines = line;
-		wellness = _wellness(line);
-
-		while (!wellness) {
-			putstr("... ");
-			line = readline();
-			lines += line;
-			wellness = _wellness(lines);
+	var show_array = function (item) {
+		if (_.isArray(item)) {
+			return beautify(_.map(item, function (elem, val) {
+				if (val === 0)
+					return "[" + show_array(elem);
+				return show_array(elem);
+			}).join(', ')) + "]";
+		} else {
+			return item;
 		}
+	};
 
-		out = _translate(_parse(_preprocess(lines)));
+	var show_lexed = function (source) {
+		process.stdout.write("Lexed:\n".green);
+		console.log(source);
+	};
 
-		if (out[out.length-1] == '\n') 
-			putstr(eval(out));
-		else
-			print(eval(out));
-	}	
+	var show_parsed = function (parsed) {
+		process.stdout.write("Parsed:\n".green);
+		console.log(parsed);
+	};
 
+	var show_translated = function (translated) {
+		process.stdout.write("Translated:\n".green);
+		console.log(translated);
+	};
+
+	var show_evaluated = function (evaluated) {
+		out = _.isArray(evaluated) ? show_array(evaluated) : evaluated;
+		process.stdout.write("Evaluated:\n".green);
+		console.log(out);
+	};
+	
+	var loop = function (built_ins, stdlib) {
+		var code, lines, well, jacket, prefix, global_eval, 
+			preprocessed, parsed, translated;
+	
+		global_eval = eval;
+		global_eval(built_ins);
+		global_eval(stdlib);
+
+		console.log("stdlib.jkt loaded.");
+
+		jacket = readline.createInterface(process.stdin, process.stdout);
+		
+		code = "";
+	
+		jacket.on('line', function (line) {
+			code += line + " ";
+
+			if (wellness(code)) { 
+				preprocessed = preprocess(code);
+				show_preprocessed(preprocessed);
+
+				parsed       = parse(preprocessed);
+				show_parsed(parsed);
+
+				translated   = translate(parsed);
+				show_translated(beautify(translated));
+
+				show_evaluated(global_eval(translated));
+				jacket.setPrompt("db > ");
+				code = "";
+			} else {
+				jacket.setPrompt(". . . ");
+			}
+			jacket.prompt();
+		});
+
+		jacket.on('close', function () {
+			console.log('\nGoodbye!');
+			jacket.close();
+			process.stdin.destroy();
+		});
+
+		prefix = "db > ";
+		jacket.setPrompt(prefix.yellow, prefix.length);
+
+		jacket.prompt();
+	};
+
+	var repl = function () {
+		var built_ins, stdlib;
+		console.log("#################");
+		console.log("## jacket REPL ##");
+		console.log("## v0.1        ##");
+		console.log("#################");
+
+		built_ins = fs.readFileSync('built_ins.js');
+
+		if (process.argv.length === 3) {
+			var source = fs.readFileSync(process.argv[2], 'utf8');
+			// var preprocessed = preprocess(source);
+			var lexed        = lex(source);
+			show_lexed(lexed);
+			var parsed       = parse(lexed);
+			show_parsed(parsed);
+			// var translated   = translate(parsed);
+			// show_translated(beautify(translated));
+  		// show_evaluated(eval(translated));
+		} else {
+			loop(built_ins, stdlib);
+		}
+	}();
 }();
