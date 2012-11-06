@@ -1,0 +1,134 @@
+{
+  var _ = require('underscore');
+  var line = 1;
+}
+
+start 
+  = expressions
+
+expressions 
+  = expr:expression exprs:expressions* 
+  { 
+    var res = (expr.type !== 'Whitespace') ? [expr] : [];
+    
+    _.each(exprs, function (e) {
+      res = res.concat((e.type !== 'Whitespace') ? e : []);
+    });
+    
+    return res;
+  }
+  / "'" expr:expression
+  { 
+    var quote = {
+      type: 'Expression'
+    , value: [{
+        type:  'Symbol'
+      , value: 'quote'
+      , line:  line
+      , column:   pos.column
+      }]
+    };
+  
+    if (expr.type !== 'Whitespace')
+      quote.value.push(expr);
+    
+    return quote;
+  }
+
+
+list 
+  = "(" exprs:expressions ")"
+  {
+    return {
+      type:  "Expression"
+    , value: exprs
+    , line:  line
+    , column:   pos.column
+    };
+  }
+
+expression 
+  = integer
+  / comment
+  / symbol 
+  / string  
+  / list 
+  / whitespace
+
+comment
+  = [;]+ msg:[^\n]* '\n'
+  {
+    return { 
+      type: 'Whitespace'
+    , value: msg.join('').trim()
+    }; 
+  }
+  
+whitespace
+  = w:[ \t\n\r,]+
+  {
+    if (w.join('') === '\n') line++;
+    return { type: 'Whitespace' };
+  }
+
+string 
+  = '"' '"'
+  {
+    return {
+      type:  'String'
+    , value: ''
+    , column: pos.column
+    , line:  line
+    };
+  }
+  / '"' chars:chars '"'
+  {
+    return {
+      type:  'String'
+    , value: chars
+    , column: pos.column
+    , line:  line
+    };
+  }
+  
+chars
+  = chars:char+ { return chars.join(""); }
+
+char
+  // In the original JSON grammar: "any-Unicode-character-except-"-or-\-or-control-character"
+  = [^"\\\0-\x1F\x7f]
+  / '\\"'  { return '"';  }
+  / "\\\\" { return "\\"; }
+  / "\\/"  { return "/";  }
+  / "\\b"  { return "\b"; }
+  / "\\f"  { return "\f"; }
+  / "\\n"  { return "\n"; }
+  / "\\r"  { return "\r"; }
+  / "\\t"  { return "\t"; }
+
+symbol
+  = sym:[-+*<>/!$?@%^:&=\[\].a-zA-Z0-9_]+
+  {
+    return {
+      type:  'Symbol'
+    , value: sym.join('')
+    , column: pos.column
+    , line:  line
+    };
+  }
+
+integer
+  = digits:[0-9]+
+  {
+    return {
+      type:  'Integer'
+    , value: parseInt(digits.join(''))
+    , column: pos.column
+    , line:  line
+    };
+  }
+  
+
+
+
+
